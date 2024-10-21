@@ -1,0 +1,8 @@
+bun test v1.1.33 (247456b6)
+1730095954 {
+  turnResult: "",
+  firstCharacterTurnPerspective: "TextOne.",
+  secondCharacterTurnPerspective: "TextTwo.",
+  firstCharacterDamage: 42,
+  secondCharacterDamage: 35,
+}
