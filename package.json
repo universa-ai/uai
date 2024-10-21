@@ -1,0 +1,20 @@
+{
+  "name": "uai",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "test-integration": "bun test tests/uai.test.ts --timeout 30000",
+    "test-unit": "bun run tests/run-test.ts > tests/stdout.txt && cat tests/stdout.txt && cat tests/stderr.txt"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@swc/core": "^1.7.40",
+    "react": "^18.3.1"
+  },
+  "version": "0.0.1"
+}

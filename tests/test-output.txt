@@ -1,0 +1,83 @@
+{
+  "key": null,
+  "ref": null,
+  "props": {
+    "c17 |     <assistant>Assistant message</assistant>
+18 |   </>;
+19 |   const result = await parseJSXInput(input);
+20 |   console.log(result)
+21 | 
+22 |   expect(result.outputPath).toBe("path/to/output");
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "path/to/output"
+Received: undefined
+
+      at /Users/gur/Documents/uai/tests/parse.spec.tsx:22:29
+(fail) parseJSXInput [10.68ms]
+
+ 0 pass
+ 1 fail
+ 1 expect() calls
+Ran 1 tests across 1 files. [62.00ms]
+},
+      {
+        "type": "temperature",
+        "key": null,
+        "ref": null,
+        "props": {
+          "value": "0.9"
+        },
+        "_owner": null,
+        "_store": {}
+      },
+      {
+        "type": "system",
+        "key": null,
+        "ref": null,
+        "props": {
+          "children": "System message"
+        },
+        "_owner": null,
+        "_store": {}
+      },
+      {
+        "type": "user",
+        "key": null,
+        "ref": null,
+        "props": {
+          "children": [
+            "User message with ignored part",
+            {
+              "type": "fragment",
+              "key": null,
+              "ref": null,
+              "props": {
+                "ignore": true,
+                "children": "This part should be ignored"
+              },
+              "_owner": null,
+              "_store": {}
+            },
+            "End of message"
+          ]
+        },
+        "_owner": null,
+        "_store": {}
+      },
+      {
+        "type": "assistant",
+        "key": null,
+        "ref": null,
+        "props": {
+          "children": "Assistant message"
+        },
+        "_owner": null,
+        "_store": {}
+      }
+    ]
+  },
+  "_owner": null,
+  "_store": {}
+}
