@@ -9,7 +9,7 @@ import extractJsonFromJSX from "./extractJsonFromJSX";
 
 const locks: Map<string, Promise<void> | null> = new Map();
 
-const db = new Database("/Users/gur/.uai/locks2.sqlite", { create: true });
+const db = new Database(join(import.meta.dir, "locks.sqlite"), { create: true });
 await db.query(
   `CREATE TABLE IF NOT EXISTS locks (path TEXT PRIMARY KEY, lock INTEGER);`,
 ).run();
