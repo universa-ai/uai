@@ -20,6 +20,7 @@ export default async function parseJSXInput(
   let model = "gpt-4o"; // Default model
   let contentTag = "";
   let commitTag = "";
+  let enablesPrediction = false;
 
   const relativeToRepoPath = async (filePathResolved: string) => {
     try {
@@ -44,10 +45,10 @@ export default async function parseJSXInput(
   };
 
   const processImageFile = async (filePath: string): Promise<string> => {
-    console.debug(1732207028, filePath);
+console.debug(1732207028, filePath)
 
     const fileContent = await Bun.file(filePath).arrayBuffer();
-    console.debug(1732207032, fileContent);
+console.debug(1732207032, fileContent)
 
     const fileBuffer = Buffer.from(fileContent);
     const encoded = fileBuffer.toString("base64");
@@ -135,7 +136,7 @@ export default async function parseJSXInput(
                 },
               },
             ]);
-            console.debug(1732205922, imgWithLabel.role);
+            console.debug(1732205922, imgWithLabel.role)
             messages.push(imgWithLabel);
           } else {
             messages.push(createMessageObject(role, [
@@ -237,6 +238,7 @@ export default async function parseJSXInput(
     } else if (child.type === "settings") {
       temperature = parseFloat(child.props.temperature) || temperature;
       model = child.props.model || model;
+      enablesPrediction = child.props.enablesPrediction || false;
     } else if (["system", "user", "assistant"].includes(child.type)) {
       const role = child.type;
       let aggregatedContent = "";
@@ -280,5 +282,6 @@ export default async function parseJSXInput(
     model,
     contentTag,
     commitTag,
+    enablesPrediction,
   };
 }
