@@ -6,38 +6,42 @@ export default workflow(async function threeWriters(userMessage, outputPath, opt
   let {
     temperatures = [0.1],
     documents = [],
+    shells = [],
     task = "",
     avoids = [],
     embraces = [],
     fileName = "",
-    formatFields = []
+    formatFields = [],
+    prediction,
   } = opts;
 
-  console.debug(1733132392, avoids, embraces, documents)
-
+  console.debug(1733132392, avoids, embraces, documents, shells);
 
   // Ensure temperatures is an array
   if (!Array.isArray(temperatures) || temperatures.length === 0) {
     temperatures = [0.1];
   }
 
-  const tagsOfFormatFields = formatFields.map(it => {
-                const TagName = it.tagName;
-                return <TagName>{it.fieldDescription}</TagName>;
-              })
+  const tagsOfFormatFields = formatFields.map((it) => {
+    const TagName = it.tagName;
+    return <TagName>{it.fieldDescription}</TagName>;
+  });
 
   const renderDocuments = () => {
     if (documents.length === 0) return null;
-    return documents.map((it) => (
-      <document wrap description={it.description} path={it.path} />
-    ));
+    return documents.map((it) => <document wrap description={it.description} path={it.path} />);
+  };
+
+  const renderShells = () => {
+    if (shells.length === 0) return null;
+    return shells.map((it) => <command label={it.label} shell={it.shell} />);
   };
 
   const renderAvoids = () => {
     if (avoids.length === 0) return null;
     return (
       <avoidTheseExpressions>
-        {avoids.map(it => (
+        {avoids.map((it) => (
           <fragment>
             <expr>{it.expr}</expr>
             <reason>{it.reason}</reason>
@@ -51,7 +55,7 @@ export default workflow(async function threeWriters(userMessage, outputPath, opt
     if (embraces.length === 0) return null;
     return (
       <embraceThose>
-        {embraces.map(it => (
+        {embraces.map((it) => (
           <fragment>
             <expr>{it.expr}</expr>
             <reason>{it.reason}</reason>
@@ -61,7 +65,6 @@ export default workflow(async function threeWriters(userMessage, outputPath, opt
     );
   };
 
-
   const prompts = temperatures.map((temperature) => (
     <>
       <output
@@ -70,25 +73,28 @@ export default workflow(async function threeWriters(userMessage, outputPath, opt
         commit="thinking"
         content="finalResponse"
       />
-      <settings temperature={temperature} model="gpt-4o" />
+      <settings temperature={temperature} model="gpt-4o" enablesPrediction={prediction} />
       <system>
         <instruction>Complete user task and respond in following format.</instruction>
         <responseFormat>
           <thinking>THINK carefully before responding.</thinking>
-          {fileName ? (
-            <finalResponse>
-              Complete contents of {fileName} file.
-            </finalResponse>
-          ) : (
-            <requiredFields>
-              {tagsOfFormatFields}
-            </requiredFields>
-          )}
+          {fileName
+            ? (
+              <finalResponse>
+                Complete contents of {fileName} file.
+              </finalResponse>
+            )
+            : (
+              <requiredFields>
+                {tagsOfFormatFields}
+              </requiredFields>
+            )}
         </responseFormat>
       </system>
       <user>
         <context>
           {renderDocuments()}
+          {renderShells()}
         </context>
         <rules>
           {renderAvoids()}
@@ -98,7 +104,7 @@ export default workflow(async function threeWriters(userMessage, outputPath, opt
       </user>
     </>
   ));
-console.debug(1733130243, prompts)
+  console.debug(1733130243, prompts);
 
   try {
     const result = await Promise.all(prompts.map(executePrompt));

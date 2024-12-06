@@ -1,12 +1,20 @@
 export default function workflow(fn) {
   return (userMessage) => {
     return {
+      shells: [],
       documents: [],
       temperatures: [],
       avoids: [],
       embraces: [],
+      prediction: false,
 
       task: "",
+
+      withPrediction(val: boolean) {
+        this.prediction = val;
+
+        return this;
+      },
 
       avoid(expr, reason) {
         this.avoids.push({ expr, reason });
@@ -16,6 +24,12 @@ export default function workflow(fn) {
 
       embrace(expr, reason) {
         this.embraces.push({ expr, reason });
+
+        return this;
+      },
+
+      withShell(shell, label) {
+        this.shells.push({ shell, label });
 
         return this;
       },
@@ -47,9 +61,11 @@ export default function workflow(fn) {
           task: this.task,
           avoids: this.avoids,
           embraces: this.embraces,
+          shells: this.shells,
+          prediction: this.prediction,
         };
 
-        opts.fileName = fileName ?? outputPath.split('/').pop();
+        opts.fileName = fileName ?? outputPath.split("/").pop();
 
         return fn(userMessage, outputPath, opts);
       },
@@ -61,6 +77,7 @@ export default function workflow(fn) {
           task: this.task,
           avoids: this.avoids,
           embraces: this.embraces,
+          shells: this.shells,
         };
 
         opts.formatFields = Object.keys(fields).map((it) => {
