@@ -11,8 +11,13 @@ export default function workflow(fn) {
       task: "",
 
       withPrediction(val: boolean) {
-        this.prediction = val;
+    this.prediction = val;
 
+        return this;
+      },
+
+      think(good, bad, reason) {
+        this.thoughts.push({good, bad, reason});
         return this;
       },
 
@@ -62,10 +67,12 @@ export default function workflow(fn) {
           avoids: this.avoids,
           embraces: this.embraces,
           shells: this.shells,
-          prediction: this.prediction,
+  prediction: this.prediction,
+thoughts: this.thoughts,
+
         };
 
-        opts.fileName = fileName ?? outputPath.split("/").pop();
+        opts.fileName = fileName ?? outputPath.split('/').pop();
 
         return fn(userMessage, outputPath, opts);
       },
@@ -78,6 +85,7 @@ export default function workflow(fn) {
           avoids: this.avoids,
           embraces: this.embraces,
           shells: this.shells,
+thoughts: this.thoughts,
         };
 
         opts.formatFields = Object.keys(fields).map((it) => {
