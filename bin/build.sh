@@ -1,0 +1,1 @@
+bun build ./examples/complete-file-todos.tsx --compile --outfile ./bin/complete-file-todos

@@ -1,4 +1,4 @@
-import executePrompt from "/Users/gur/Documents/uai/src/uai.ts";
+import executePrompt from "../src/uai.ts";
 import workflow from "../src/workflow.ts";
 
 export default workflow(async function threeWriters(userMessage, outputPath, opts) {

@@ -1,3 +1,6 @@
+bin/*
+!bin/build.sh
+
 *.sqlite
 
 bun.lockb

@@ -5,7 +5,10 @@ import { Database } from "bun:sqlite";
 
 const locks: Map<string, Promise<void> | null> = new Map();
 
-const db = new Database(join(import.meta.dir, "locks.sqlite"), { create: true });
+const homePath = (await $`echo $HOME`.text()).trim();
+console.log("homePath ==> ", homePath);
+
+const db = new Database(join(homePath, ".uai", "locks.sqlite"), { create: true });
 await db.query(
   `CREATE TABLE IF NOT EXISTS locks (path TEXT PRIMARY KEY, lock INTEGER);`,
 ).run();
@@ -81,7 +84,9 @@ export function jsxToJson(jsx: string, targetTag?: string): any {
     if (isClosing) {
       coords[tagName].to = tagStartPos;
     } else {
-      coords[tagName].from = tagEndPos;
+      if (!coords[tagName].from) {
+        coords[tagName].from = tagEndPos;
+      }
     }
   }
 
@@ -140,6 +145,8 @@ export default async function processJSXInput(
             return typeof content === "string" ? { role, content: content.trim() } : { role, content };
           };
 
+          const images = []
+
           async function processChildren(
             children: InputJSXElement | InputJSXElement[] | string,
             role: string,
@@ -196,30 +203,32 @@ export default async function processJSXInput(
 
                 if (fileType === "image") {
                   const imageUrl = await processImageFile(filePathResolved);
-                  if (children.props.label || children.props.description) {
-                    const imgWithLabel = createMessageObject(role, [
-                      {
-                        "type": "text",
-                        "text": children.props.label || children.props.description,
-                      },
-                      {
-                        "type": "image_url",
-                        "image_url": {
-                          "url": imageUrl,
-                        },
-                      },
-                    ]);
-                    messages.push(imgWithLabel);
-                  } else {
-                    messages.push(createMessageObject(role, [
-                      {
-                        "type": "image_url",
-                        "image_url": {
-                          "url": imageUrl,
-                        },
-                      },
-                    ]));
-                  }
+                  images.push(imageUrl);
+                  enablesPrediction = false;
+                  // if (children.props.label || children.props.description) {
+                  //   const imgWithLabel = createMessageObject(role, [
+                  //     {
+                  //       "type": "text",
+                  //       "text": children.props.label || children.props.description,
+                  //     },
+                  //     {
+                  //       "type": "image_url",
+                  //       "image_url": {
+                  //         "url": imageUrl,
+                  //       },
+                  //     },
+                  //   ]);
+                  //   messages.push(imgWithLabel);
+                  // } else {
+                  //   messages.push(createMessageObject(role, [
+                  //     {
+                  //       "type": "image_url",
+                  //       "image_url": {
+                  //         "url": imageUrl,
+                  //       },
+                  //     },
+                  //   ]));
+                  // }
                 } else {
                   let fileContent = "";
 
@@ -234,6 +243,7 @@ export default async function processJSXInput(
                       fileContent = `Error fetching file content from revision ${children.props.revision}`;
                     }
                   } else {
+                    console.log("filePathResolved ==> ", filePathResolved);
                     fileContent = await Bun.file(filePathResolved).text();
                   }
 
@@ -318,7 +328,10 @@ export default async function processJSXInput(
             input.props.children as InputJSXElement[],
           );
 
+          let idx = 0;
+
           for (const child of topLevelChildren) {
+            idx++;
             if (child.type === "output") {
               if (child.props.path) {
                 outputPath = (
@@ -341,6 +354,25 @@ export default async function processJSXInput(
                 aggregatedContent,
                 1,
               );
+              if (idx == topLevelChildren.length && images.length > 0 && role == 'user') {
+                messages.push({
+                  role,
+                  content: [{
+                    type: "text",
+                    text: aggregatedContent,
+                  }, ...images.map(it => {
+                    return {
+                      type: 'image_url',
+                      image_url: {
+                        url: it,
+                        detail: "low", // 512x512
+                      },
+                    }
+                  })]
+                })
+              } else {
+                messages.push({ role, content: aggregatedContent })
+              }
               messages.push(createMessageObject(role, aggregatedContent));
             }
           }
@@ -401,6 +433,7 @@ export default async function processJSXInput(
             const data: OpenAIResponse = await response.json();
 
             if (data.error) {
+              console.error(data.error.message)
               return null;
             } else {
               const responseContent = data.choices[0].message.content.trim();
@@ -434,10 +467,8 @@ export default async function processJSXInput(
                         try {
                           contentToWrite = jsxToJson(responseContent)[contentTag];
                           contentToWrite = contentToWrite.trim();
-console.debug(1733735621, contentToWrite.startsWith("```"), contentToWrite.endsWith("```"))
-
                           if (contentToWrite.startsWith("```") && contentToWrite.endsWith("```")) {
-                            const lines = content.split("\n");
+                            const lines = contentToWrite.split("\n");
                             lines.shift();
                             lines.pop();
                             contentToWrite = lines.join("\n").trim();
@@ -535,9 +566,11 @@ console.debug(1733735621, contentToWrite.startsWith("```"), contentToWrite.endsW
               return contentToReturn;
             }
           } catch (error) {
+            console.error(error)
             return null;
           }
         } catch (err) {
+          console.error(err)
           throw err;
         }
       }),

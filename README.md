@@ -14,6 +14,40 @@ Ready to start your adventure with UAI? First, clone the repository using your t
 git clone https://github.com/universa-ai/uai
 ```
 
+## Quick Start
+
+Compile example program: ./bin/complete-file-todos
+
+```bash
+bun build ./examples/complete-file-todos.tsx --compile --outfile ./bin/complete-file-todos
+```
+
+Now you can pass any file which contains "todo" comments, and it will make two commits in "uai" branch for you to review and override file with chosen version.
+
+Additionally, you can add hotkey to vscode to execute completion of tasks in currently opened file.
+
+```
+[
+    {
+        "key": "ctrl+shift+r",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": { 
+            "text": "complete-file-todos \"${file}\"\n",
+            "terminalName": "uai"
+        },
+        "when": "editorTextFocus"
+    }
+]
+```
+
+Don't forget to add in ~/.bashrc and reload it with `source ~/.bashrc`:
+
+```sh
+export OPENAI_API_KEY=sk-proj-XXX
+
+export PATH="$HOME/uai/bin:$PATH"
+```
+
 ## Core Concepts
 
 UAI introduces several core concepts that enhance its functionality and usability:
