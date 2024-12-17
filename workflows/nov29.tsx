@@ -80,7 +80,7 @@ export default workflow(async function threeWriters(userMessage, outputPath, opt
             <bad>{it.bad}</bad>
             {it.reason ? <reason>{it.reason}</reason> : null}
             </thought>
-        )}
+        ))}
       </thoughts>
     )
   }

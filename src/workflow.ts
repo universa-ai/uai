@@ -6,6 +6,7 @@ export default function workflow(fn) {
       temperatures: [],
       avoids: [],
       embraces: [],
+      thoughts: [],
       prediction: false,
 
       task: "",
