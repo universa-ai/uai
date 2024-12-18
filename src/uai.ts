@@ -2,11 +2,16 @@ import { $ } from "bun";
 import { basename, dirname, join } from "path";
 import { existsSync, mkdirSync, readdirSync, watch } from "fs";
 import { Database } from "bun:sqlite";
+import * as fs from 'fs';
 
 const locks: Map<string, Promise<void> | null> = new Map();
 
 const homePath = (await $`echo $HOME`.text()).trim();
 console.log("homePath ==> ", homePath);
+
+if (!fs.existsSync(`${homePath}/.uai`)) {
+  await $`mkdir -p ${homePath}/.uai`.nothrow();
+}
 
 const db = new Database(join(homePath, ".uai", "locks.sqlite"), { create: true });
 await db.query(
