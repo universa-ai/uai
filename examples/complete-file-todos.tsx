@@ -1,11 +1,16 @@
 // @ts-nocheck
 
-import { basename } from "path";
+import { basename, join } from "path";
 
 import executePrompt from "../src/uai.ts";
 
 const outputPath = process.argv[2];
-const fileName = basename(outputPath)
+const fileName = basename(outputPath);
+
+const typesPath = join(process.cwd(), "src/types/server.d.ts");
+console.log("typesPath ==> ", typesPath);
+const typesFileExists = await Bun.file(typesPath).exists();
+console.log("typesFileExists ==> ", typesFileExists, );
 
 function generateTemperatures() {
   const secondDecimal = Math.floor(Math.random() * 9) + 1;
@@ -42,7 +47,8 @@ const prompts = temperatures.map((temperature) => (
     </system>
     <user>
       <context>
-          <document wrap name={fileName} path={outputPath} />
+        <document wrap name={fileName} path={outputPath} />
+        <document wrap name="types.d.ts" path={typesPath} ignore={!typesFileExists} />
       </context>
     </user>
   </>
