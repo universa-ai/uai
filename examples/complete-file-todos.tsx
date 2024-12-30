@@ -10,7 +10,7 @@ const fileName = basename(outputPath);
 const typesPath = join(dirname(outputPath), "types.d.ts");
 console.log("typesPath ==> ", typesPath);
 const typesFileExists = await Bun.file(typesPath).exists();
-console.log("typesFileExists ==> ", typesFileExists, );
+console.log("typesFileExists ==> ", typesFileExists);
 
 function generateTemperatures() {
   const secondDecimal = Math.floor(Math.random() * 9) + 1;
@@ -21,7 +21,7 @@ function generateTemperatures() {
   } while (firstDecimal2 === firstDecimal1);
   return [
     parseFloat(`0.${firstDecimal1}${secondDecimal}`),
-    parseFloat(`0.${firstDecimal2}${secondDecimal}`)
+    parseFloat(`0.${firstDecimal2}${secondDecimal}`),
   ];
 }
 
@@ -39,10 +39,10 @@ const prompts = temperatures.map((temperature) => (
     <system>
       <instruction>Rewrite {fileName} by following all "todo" comments and completing the tasks.</instruction>
       <responseFormat>
-          <thinking>THINK carefully before responding.</thinking>
-          <finalResponse>
-              Complete contents of {fileName} file.
-          </finalResponse>
+        <thinking>THINK carefully before responding.</thinking>
+        <finalResponse>
+          Complete contents of {fileName} file.
+        </finalResponse>
       </responseFormat>
     </system>
     <user>
@@ -57,4 +57,7 @@ console.debug(1733130243, prompts);
 
 await Promise.all(prompts.map(executePrompt));
 
-console.log("Congratulations! The prompts have been successfully executed with the following temperatures:", temperatures);
+console.log(
+  "Congratulations! The prompts have been successfully executed with the following temperatures:",
+  temperatures,
+);

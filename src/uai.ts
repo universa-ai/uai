@@ -2,7 +2,7 @@ import { $ } from "bun";
 import { basename, dirname, join } from "path";
 import { existsSync, mkdirSync, readdirSync, watch } from "fs";
 import { Database } from "bun:sqlite";
-import * as fs from 'fs';
+import * as fs from "fs";
 
 const locks: Map<string, Promise<void> | null> = new Map();
 
@@ -150,7 +150,7 @@ export default async function processJSXInput(
             return typeof content === "string" ? { role, content: content.trim() } : { role, content };
           };
 
-          const images = []
+          const images = [];
 
           async function processChildren(
             children: InputJSXElement | InputJSXElement[] | string,
@@ -359,24 +359,27 @@ export default async function processJSXInput(
                 aggregatedContent,
                 1,
               );
-              if (idx == topLevelChildren.length && images.length > 0 && role == 'user') {
+              if (idx == topLevelChildren.length && images.length > 0 && role == "user") {
                 messages.push({
                   role,
-                  content: [{
-                    type: "text",
-                    text: aggregatedContent,
-                  }, ...images.map(it => {
-                    return {
-                      type: 'image_url',
-                      image_url: {
-                        url: it,
-                        detail: "low", // 512x512
-                      },
-                    }
-                  })]
-                })
+                  content: [
+                    {
+                      type: "text",
+                      text: aggregatedContent,
+                    },
+                    ...images.map((it) => {
+                      return {
+                        type: "image_url",
+                        image_url: {
+                          url: it,
+                          detail: "low", // 512x512
+                        },
+                      };
+                    }),
+                  ],
+                });
               } else {
-                messages.push({ role, content: aggregatedContent })
+                messages.push({ role, content: aggregatedContent });
               }
               messages.push(createMessageObject(role, aggregatedContent));
             }
@@ -400,7 +403,7 @@ export default async function processJSXInput(
           const TEMPERATURE = parseFloat(process.env.TEMPERATURE || temperature.toString());
           const API_KEY = process.env.OPENAI_API_KEY;
 
-          const isClaude = model?.includes('claude');
+          const isClaude = model?.includes("claude");
           // console.log("isClaude ==> ", isClaude);
 
           console.log("model ==> ", model);
@@ -411,14 +414,14 @@ export default async function processJSXInput(
             max_tokens: 16384,
             temperature: TEMPERATURE,
           };
-          
+
           if (isClaude) {
             requestBody.max_tokens = 8000;
           }
 
           if (isClaude) {
-            const systemMessage = requestBody.messages.find(it => it.role == "system");
-            requestBody.messages = requestBody.messages.filter(it => it.role !== 'system');
+            const systemMessage = requestBody.messages.find((it) => it.role == "system");
+            requestBody.messages = requestBody.messages.filter((it) => it.role !== "system");
             requestBody.system = systemMessage.content;
           }
 
@@ -437,14 +440,14 @@ export default async function processJSXInput(
             }
           }
 
-          const headers: any = {}
-          headers['Content-Type'] = "application/json";
-          
+          const headers: any = {};
+          headers["Content-Type"] = "application/json";
+
           if (isClaude) {
             headers["x-api-key"] = `${API_KEY}`;
-            headers["anthropic-version"] = "2023-06-01";       
+            headers["anthropic-version"] = "2023-06-01";
           } else {
-            headers['Authorization'] = `Bearer ${API_KEY}`;
+            headers["Authorization"] = `Bearer ${API_KEY}`;
           }
 
           const requestOptions: RequestInit = {
@@ -458,7 +461,7 @@ export default async function processJSXInput(
             const apiUrl = process.env.OPENAI_API_URL ||
               "https://api.openai.com/v1/chat/completions";
 
-              // console.log("apiUrl ==> ", apiUrl);
+            // console.log("apiUrl ==> ", apiUrl);
 
             const response = await fetch(
               apiUrl,
@@ -469,7 +472,7 @@ export default async function processJSXInput(
             console.log("data ==> ", data);
 
             if (data.error) {
-              console.error(data.error.message)
+              console.error(data.error.message);
               return null;
             } else {
               let responseContent;
@@ -608,11 +611,11 @@ export default async function processJSXInput(
               return contentToReturn;
             }
           } catch (error) {
-            console.error(error)
+            console.error(error);
             return null;
           }
         } catch (err) {
-          console.error(err)
+          console.error(err);
           throw err;
         }
       }),

@@ -22,7 +22,8 @@ Compile example program: ./bin/complete-file-todos
 bun build ./examples/complete-file-todos.tsx --compile --outfile ./bin/complete-file-todos
 ```
 
-Now you can pass any file which contains "todo" comments, and it will make two commits in "uai" branch for you to review and override file with chosen version.
+Now you can pass any file which contains "todo" comments, and it will make two commits in "uai" branch for you to review
+and override file with chosen version.
 
 Additionally, you can add hotkey to vscode to execute completion of tasks in currently opened file.
 
@@ -61,72 +62,81 @@ const data = { ideaDescription: "A new cryptocurrency token" };
 const metadata = { qaId: "token-123", partitionKey: "crypto" };
 const inferredFields = {};
 for (const it in data) {
-    inferredFields[it] = "Some inferred value";
+  inferredFields[it] = "Some inferred value";
 }
 const finalQuery = new Query(inferredFields);
 await finalQuery.reinforce(data, metadata);
 
 // 2. Recall - Semantic search for similar data
 const recallResults = await Query.from({
-    ideaDescription: "A new cryptocurrency token",
-}).recall({ limit: 1, partition_key: 'crypto' });
+  ideaDescription: "A new cryptocurrency token",
+}).recall({ limit: 1, partition_key: "crypto" });
 
 const example = recallResults.length > 0 ? recallResults[0] : null;
 
 // 3. Infer - Execute a prompt with JSX
 const result = await Query.from({
-    ideaDescription: "A new cryptocurrency token",
-    example: {
-        name: example.name,
-        description: example.description,
-        symbol: example.symbol,
-    }
+  ideaDescription: "A new cryptocurrency token",
+  example: {
+    name: example.name,
+    description: example.description,
+    symbol: example.symbol,
+  },
 }).infer({
-    inputIsGood: 'TRUE',
-    name: 'Token Name',
-    symbol: 'TKN',
-    description: 'A revolutionary token for digital transactions',
+  inputIsGood: "TRUE",
+  name: "Token Name",
+  symbol: "TKN",
+  description: "A revolutionary token for digital transactions",
 });
 ```
 
 ## Function Descriptions
 
 ### Reinforce
-- **Purpose**: Used to train the system by adding examples to the database. This function helps in building a knowledge base for semantic searches.
-- **Usage**: 
+
+- **Purpose**: Used to train the system by adding examples to the database. This function helps in building a knowledge
+  base for semantic searches.
+- **Usage**:
   ```javascript
   const result = await finalQuery.reinforce(this.currentQuery, metadata);
   ```
-  Here, `currentQuery` contains the data to be reinforced, and `metadata` includes additional information like `qaId` and `partitionKey`.
+  Here, `currentQuery` contains the data to be reinforced, and `metadata` includes additional information like `qaId`
+  and `partitionKey`.
 
 ### Recall
+
 - **Purpose**: Performs a semantic search to find similar data based on embeddings.
-- **Usage**: 
+- **Usage**:
   ```javascript
-  const recallResults = await Query.from({ ideaDescription: "A new cryptocurrency token" }).recall({ limit: 1, partition_key: 'crypto' });
+  const recallResults = await Query.from({ ideaDescription: "A new cryptocurrency token" }).recall({
+    limit: 1,
+    partition_key: "crypto",
+  });
   ```
   This function uses the `ideaDescription` to search for similar entries in the specified partition.
 
 ### Infer
-- **Purpose**: Executes a prompt using JSX to generate responses based on the provided context and expected output format.
-- **Usage**: 
+
+- **Purpose**: Executes a prompt using JSX to generate responses based on the provided context and expected output
+  format.
+- **Usage**:
   ```javascript
   const result = await Query.from({
-      ideaDescription: "A new cryptocurrency token",
-      example: {
-          name: example.name,
-          description: example.description,
-          symbol: example.symbol,
-      }
+    ideaDescription: "A new cryptocurrency token",
+    example: {
+      name: example.name,
+      description: example.description,
+      symbol: example.symbol,
+    },
   }).infer({
-      inputIsGood: 'TRUE',
-      name: 'Token Name',
-      symbol: 'TKN',
-      description: 'A revolutionary token for digital transactions',
+    inputIsGood: "TRUE",
+    name: "Token Name",
+    symbol: "TKN",
+    description: "A revolutionary token for digital transactions",
   });
   ```
-  This function constructs a JSX prompt with settings, system instructions, and user context, then executes it to infer new data or responses.
-
+  This function constructs a JSX prompt with settings, system instructions, and user context, then executes it to infer
+  new data or responses.
 
 ## Core Concepts
 
