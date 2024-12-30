@@ -1,0 +1,1 @@
+curl -L https://github.com/asg017/sqlite-vec/releases/download/v0.1.6/install.sh | bash
