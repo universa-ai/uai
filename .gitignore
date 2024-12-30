@@ -1,3 +1,8 @@
+vec0.so
+vec0.dylib
+rembed0.so
+rembed0.dylib
+
 bin/*
 !bin/build.sh
 

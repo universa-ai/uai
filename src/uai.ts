@@ -116,7 +116,7 @@ export default async function processJSXInput(
           let outputPath = "";
           let outputBranch = "";
           let temperature = 0.7;
-          let model = "gpt-4o";
+          let model = process.env.OPENAI_MODEL;
           let contentTag = "";
           let commitTag = "";
           let enablesPrediction = true;
@@ -397,16 +397,34 @@ export default async function processJSXInput(
             .join("\n\n");
           await Bun.write(inputBackupPath, new Blob([messagesText]));
 
-          const MODEL = process.env.MODEL || model;
           const TEMPERATURE = parseFloat(process.env.TEMPERATURE || temperature.toString());
           const API_KEY = process.env.OPENAI_API_KEY;
 
+          const isClaude = model?.includes('claude');
+          // console.log("isClaude ==> ", isClaude);
+
+          console.log("model ==> ", model);
+
           const requestBody = {
-            model: MODEL,
+            model: model,
             messages: messages,
             max_tokens: 16384,
             temperature: TEMPERATURE,
           };
+          
+          if (isClaude) {
+            requestBody.max_tokens = 8000;
+          }
+
+          if (isClaude) {
+            const systemMessage = requestBody.messages.find(it => it.role == "system");
+            requestBody.messages = requestBody.messages.filter(it => it.role !== 'system');
+            requestBody.system = systemMessage.content;
+          }
+
+          if (isClaude) {
+            enablesPrediction = false;
+          }
 
           if (outputPath && enablesPrediction) {
             const outputPathFile = Bun.file(outputPath);
@@ -419,29 +437,48 @@ export default async function processJSXInput(
             }
           }
 
+          const headers: any = {}
+          headers['Content-Type'] = "application/json";
+          
+          if (isClaude) {
+            headers["x-api-key"] = `${API_KEY}`;
+            headers["anthropic-version"] = "2023-06-01";       
+          } else {
+            headers['Authorization'] = `Bearer ${API_KEY}`;
+          }
+
           const requestOptions: RequestInit = {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${API_KEY}`,
-            },
+            headers,
             body: JSON.stringify(requestBody),
             verbose: false,
           };
 
           try {
+            const apiUrl = process.env.OPENAI_API_URL ||
+              "https://api.openai.com/v1/chat/completions";
+
+              // console.log("apiUrl ==> ", apiUrl);
+
             const response = await fetch(
-              "https://api.openai.com/v1/chat/completions",
+              apiUrl,
               requestOptions,
             );
 
             const data: OpenAIResponse = await response.json();
+            console.log("data ==> ", data);
 
             if (data.error) {
               console.error(data.error.message)
               return null;
             } else {
-              const responseContent = data.choices[0].message.content.trim();
+              let responseContent;
+              if (data.choices instanceof Array) {
+                responseContent = data.choices[0].message.content.trim();
+              } else {
+                // claude
+                responseContent = data.content[0]!.text;
+              }
 
               const historyResponseDir = join(process.env.HOME || "~", ".uai", "responses");
               const sanitizedTimestamp = timestamp.replace(/\s+/g, "-").replace(/\//g, "-");
@@ -551,9 +588,9 @@ export default async function processJSXInput(
 
                       await $`git add ${outputPath}`;
                       try {
-                        await $`git commit -m "temp of ${temperature}" -m "${commitMessageContent}"`;
+                        await $`git commit -m "temp of ${temperature} from ${model}" -m "${commitMessageContent}"`;
                       } catch (err) {
-                        await $`git commit -m "temp of ${temperature} with missing description"`;
+                        await $`git commit -m "temp of ${temperature} with missing description"`.nothrow();
                       }
 
                       console.info(`✔️ Committed changes on branch ${branchName}`);

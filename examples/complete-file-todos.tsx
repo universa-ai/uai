@@ -1,13 +1,13 @@
 // @ts-nocheck
 
-import { basename, join } from "path";
+import { basename, dirname, join } from "path";
 
 import executePrompt from "../src/uai.ts";
 
 const outputPath = process.argv[2];
 const fileName = basename(outputPath);
 
-const typesPath = join(process.cwd(), "src/types/server.d.ts");
+const typesPath = join(dirname(outputPath), "types.d.ts");
 console.log("typesPath ==> ", typesPath);
 const typesFileExists = await Bun.file(typesPath).exists();
 console.log("typesFileExists ==> ", typesFileExists, );
@@ -35,7 +35,7 @@ const prompts = temperatures.map((temperature) => (
       commit="thinking"
       content="finalResponse"
     />
-    <settings temperature={temperature} model="gpt-4o" enablesPrediction={true} />
+    <settings temperature={temperature} enablesPrediction={true} />
     <system>
       <instruction>Rewrite {fileName} by following all "todo" comments and completing the tasks.</instruction>
       <responseFormat>
