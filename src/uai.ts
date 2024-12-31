@@ -163,8 +163,8 @@ export default async function processJSXInput(
             let aggregatedContent = currentContent;
             const nextLevel = currentLevel + 1;
 
-            if (typeof children === "string") {
-              return aggregatedContent + children;
+            if (typeof children !== "object" && typeof children !== "function" && children !== null && children !== undefined) {
+              return aggregatedContent + String(children);
             }
 
             if (Array.isArray(children)) {
@@ -381,7 +381,6 @@ export default async function processJSXInput(
               } else {
                 messages.push({ role, content: aggregatedContent });
               }
-              messages.push(createMessageObject(role, aggregatedContent));
             }
           }
 
@@ -414,6 +413,7 @@ export default async function processJSXInput(
             max_tokens: 16384,
             temperature: TEMPERATURE,
           };
+          if (process.env.VERBOSE) console.log("messages ==> ", messages);
 
           if (isClaude) {
             requestBody.max_tokens = 8000;
@@ -469,10 +469,9 @@ export default async function processJSXInput(
             );
 
             const data: OpenAIResponse = await response.json();
-            console.log("data ==> ", data);
 
             if (data.error) {
-              console.error(data.error.message);
+              console.log("data.error ==> ", data.error);
               return null;
             } else {
               let responseContent;
@@ -492,6 +491,7 @@ export default async function processJSXInput(
               await Bun.write(responseBackupPath, new Blob([responseContent]));
 
               let contentToReturn = { response: responseContent };
+              if (process.env.VERBOSE) console.log("contentToReturn ==> ", contentToReturn)
 
               try {
                 contentToReturn = jsxToJson(responseContent);

@@ -3,6 +3,7 @@ import * as sqliteVec from "sqlite-vec";
 import os from "os";
 import { join } from "path";
 import ShortUniqueId from "short-unique-id";
+import React from "react";
 
 const { randomUUID } = new ShortUniqueId({ length: 10, dictionary: "alphanum_lower" });
 
@@ -61,7 +62,6 @@ class Query {
     const createXmlTags = (obj: any): JSX.Element[] => {
       return Object.entries(obj).filter((it) => it[0] && it[1]).map(([key, value]) => {
         const TagName = key;
-        // console.log("TagName ==> ", TagName, value);
         if (typeof value === "object" && value !== null) {
           return <TagName>{createXmlTags(value)}</TagName>;
         }
@@ -78,7 +78,7 @@ class Query {
         <system>
           <responseFormat>
             <thinking>THINK carefully before responding, and write down your reasoning.</thinking>
-            {tagsOfToFields}
+            {...tagsOfToFields}
           </responseFormat>
         </system>
         <user>
@@ -88,10 +88,9 @@ class Query {
         </user>
       </>
     );
-    console.log("prompt ==> ", prompt);
+    if (process.env.VERBOSE) console.log("prompt ==> ", prompt);
 
     const result = await executePrompt(prompt);
-    // console.log("infer result ==> ", result);
 
     return result;
   }
@@ -166,10 +165,9 @@ class Query {
       $fromData: fromData,
       $toData: toData,
     };
-    // console.log("params ==> ", params);
 
     let rowExists = db.query("SELECT 1 FROM vec_uai WHERE qa_id = $qaId").get({ $qaId: id });
-    // console.log("rowExists ==> ", rowExists);
+
     if (rowExists) {
     } else {
       db.query(`
@@ -194,12 +192,9 @@ class Query {
     try {
       const { qaId, partitionKey = "default" } = metadata;
       const toData = this.jsonToXml(additionalData);
-      // console.log("toData ==> ", toData);
       const fromData = this.jsonToXml(this.currentQuery);
-      // console.log("fromData ==> ", fromData);
 
       await this.insertVectorData(fromData, toData, partitionKey, qaId);
-      // await this.insertVectorData(toData, fromData, `${partitionKey}_reverse`, qaId);
 
       return { success: true, message: "Data reinforced successfully" };
     } catch (error) {
@@ -210,7 +205,6 @@ class Query {
 
   recall(filters: { [key: string]: any } = {}) {
     const fromData = this.jsonToXml(this.currentQuery);
-    console.log("fromData ==> ", fromData);
 
     let query = `
             SELECT 
@@ -227,7 +221,6 @@ class Query {
     };
 
     let k = filters.limit || 1;
-    console.log("k ==> ", k);
 
     Object.entries(filters).filter((it) => it[0] != "limit").forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -239,29 +232,19 @@ class Query {
             if (typeof value.not[i] == "string") {
               query += ` AND ${key} != $${key}${i} `;
               params[`$${key}${i}`] = value.not[i];
-              // k++; // we increase number of top matches by one because we skill this one
             }
           }
-          // k = 20;
         }
       }
     });
 
     query += ` AND k = ${k} ORDER BY distance ASC`;
 
-    console.log("query ==> ", query);
-    console.log("params ==> ", params);
-
     const result = db.query(query).all(params);
-
-    // result.reverse(); dont need to reverse, the lower the distance the higehr similarity is
-
-    console.log("Recalling data with query:", fromData, "results:", result);
 
     const structuredResponse = result?.length > 0
       ? result.map((it) => {
         const json = jsxToJson(it.to_data);
-        // console.log("json ==> ", json);
         return json;
       })
       : [];

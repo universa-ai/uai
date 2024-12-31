@@ -11,30 +11,62 @@ from AI models.
 Ready to start your adventure with UAI? First, clone the repository using your trusty terminal:
 
 ```bash
-git clone https://github.com/universa-ai/uai
+git clone https://github.com/universa-ai/uai $HOME/uai
+cd $HOME/uai && bun install
 ```
 
 ## Quick Start
 
-Compile example program: ./bin/complete-file-todos
+In this example we will compile three binaries from the same program, correspondingly for OpenAI, Grok, and Claude.
 
+The program *complete-file-todos.tsx* allows you to communicate with LLMs by adding "todo:" comments directly in any given file of your project. When the program invoked, it does not append anything into your current file, but instead it makes a new commit into a separate "uai" branch of the project. It allows you to review completions offered by different LLMs with different temperatures and then merge chosen fragments into your actual file.   
+
+1) Compile "gpt"
 ```bash
-bun build ./examples/complete-file-todos.tsx --compile --outfile ./bin/complete-file-todos
+export OPENAI_API_KEY="YOUR-OPENAI-KEY"
+export OPENAI_MODEL="gpt-4o"
+bun build ./examples/complete-file-todos.tsx --compile --outfile ./bin/gpt
 ```
 
-Now you can pass any file which contains "todo" comments, and it will make two commits in "uai" branch for you to review
-and override file with chosen version.
+2) Compile "sonnet"
+```bash
+export OPENAI_API_KEY="YOUR-CLAUDE-KEY"
+export OPENAI_MODEL="claude-3-5-sonnet-latest"
+bun build ./examples/complete-file-todos.tsx --compile --outfile ./bin/sonnet
+```
 
-Additionally, you can add hotkey to vscode to execute completion of tasks in currently opened file.
+3) Compile "grok"
+```bash
+export OPENAI_API_KEY="YOUR-GROK-KEY"
+export OPENAI_MODEL="grok-beta"
+bun build ./examples/complete-file-todos.tsx --compile --outfile ./bin/grok
+```
+
+Now you can have these three programs at your fingertips by adding shortcuts into VSCode keybindings.json:
 
 ```
 [
     {
-        "key": "ctrl+shift+r",
+        "key": "f1",
         "command": "workbench.action.terminal.sendSequence",
         "args": { 
-            "text": "complete-file-todos \"${file}\"\n",
-            "terminalName": "uai"
+            "text": "sonnet \"${file}\" \n"
+        },
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "f2",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": { 
+            "text": "grok \"${file}\" \n"
+        },
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "f3",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": { 
+            "text": "gpt \"${file}\" \n"
         },
         "when": "editorTextFocus"
     }
@@ -44,8 +76,6 @@ Additionally, you can add hotkey to vscode to execute completion of tasks in cur
 Don't forget to add in ~/.bashrc and reload it with `source ~/.bashrc`:
 
 ```sh
-export OPENAI_API_KEY=sk-proj-XXX
-
 export PATH="$HOME/uai/bin:$PATH"
 ```
 
@@ -54,7 +84,6 @@ export PATH="$HOME/uai/bin:$PATH"
 Here's a simple example to get you started with HyDE:
 
 ```javascript
-// Example of using HyDE functions
 import Query from "../uai/src/query.tsx";
 
 // 1. Reinforce - Add examples to the database
