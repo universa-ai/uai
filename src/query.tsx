@@ -42,7 +42,7 @@ db.query(`
   );
 `).run();
 
-db.query('insert into temp.rembed_clients(name, options) values("text-embedding-3-small", "openai")').run();
+db.query('insert or ignore into temp.rembed_clients(name, options) values("text-embedding-3-small", "openai")').run();
 
 interface MetadataOptions {
   qaId?: string;
